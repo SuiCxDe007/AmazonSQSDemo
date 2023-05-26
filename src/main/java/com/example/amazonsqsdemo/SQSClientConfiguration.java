@@ -19,6 +19,7 @@ public class SQSClientConfiguration {
     @Value("${cloud.aws.credentials.secretKey}")
     private String awsSecretKey;
 
+    //Create SQS Client Bean
     @Bean
     public AmazonSQS amazonSQSClient(){
         BasicAWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey,awsSecretKey);
@@ -29,6 +30,7 @@ public class SQSClientConfiguration {
 
     }
 
+    //Create S3 Client bean
     @Bean
     public AmazonS3 amazonS3Client(){
         BasicAWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey,awsSecretKey);
