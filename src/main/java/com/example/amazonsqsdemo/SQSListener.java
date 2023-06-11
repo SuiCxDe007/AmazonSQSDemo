@@ -33,7 +33,7 @@ public class SQSListener {
     @PostConstruct
     public void init(){
         LOGGER.info("======================================================");
-        LOGGER.info("Starting SQS Listenere for Queue {}", queueUrl);
+        LOGGER.info("Starting SQS Listening for Queue {}", queueUrl);
         LOGGER.info("======================================================");
         new Thread(()->{
            while(running){
@@ -44,15 +44,8 @@ public class SQSListener {
 
                List<Message> messages = sqs.receiveMessage(receiveMessageRequest).getMessages();
                for(Message message : messages){
-                   LOGGER.info("Received Message with ID: {}",message.getMessageId());
+                   LOGGER.info("Received Message with ID: {} Content: {}",message.getMessageId(),message.getBody());
                    LOGGER.info("Attributes : {}",message.getMessageAttributes().get("AuthToken"));
-
-                   try{
-
-                   }catch (Exception e){
-                       throw new RuntimeException(e);
-                   }
-
                }
 
            }
