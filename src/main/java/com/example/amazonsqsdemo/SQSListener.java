@@ -24,10 +24,12 @@ public class SQSListener {
 
     private volatile boolean running = true;
 
+    private SQSMessageProcessor messageProcessor;
 
     @Autowired
-    public SQSListener(AmazonSQS sqs) {
+    public SQSListener(AmazonSQS sqs, SQSMessageProcessor messageProcessor) {
         this.sqs = sqs;
+        this.messageProcessor = messageProcessor;
     }
 
     @PostConstruct
@@ -44,10 +46,8 @@ public class SQSListener {
 
                List<Message> messages = sqs.receiveMessage(receiveMessageRequest).getMessages();
                for(Message message : messages){
-                   LOGGER.info("Received Message with ID: {} Content: {}",message.getMessageId(),message.getBody());
-                   LOGGER.info("Attributes : {}",message.getMessageAttributes().get("AuthToken"));
+                    messageProcessor.processMessage(message);
                }
-
            }
         }).start();
     }
