@@ -1,20 +1,27 @@
 package com.example.amazonsqsdemo;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.AmazonSQSException;
 import com.amazonaws.services.sqs.model.MessageAttributeValue;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
+import com.amazonaws.util.IOUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.java.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,5 +85,27 @@ public class SQSService {
             LOGGER.error("SQS Error Occurred with Code: {} message: {}",e.getErrorCode(),e.getErrorMessage());
             return e.getErrorMessage();
         }
+    }
+
+    public ResponseEntity<SQSMessage> getMessage(String messageId) {
+        try {
+            S3Object messageContent = s3.getObject(new GetObjectRequest(awsBucketName,messageId+".json"));
+            InputStream inputStream = messageContent.getObjectContent();
+            String jsonStringFromS3 = IOUtils.toString(inputStream);
+            ObjectMapper objectMapper = new ObjectMapper();
+            SQSMessage sqsMessage = objectMapper.readValue(jsonStringFromS3, SQSMessage.class);
+            return ResponseEntity.ok(sqsMessage);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (AmazonS3Exception e){
+            if (e.getStatusCode() == 404 && "NoSuchKey".equals(e.getErrorCode())){
+                LOGGER.error("No Message was found for the given ID");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            LOGGER.error("S3 Exception Occurred: {}", e.getErrorMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
     }
 }

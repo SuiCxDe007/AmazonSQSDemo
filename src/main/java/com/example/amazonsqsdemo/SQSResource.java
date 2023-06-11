@@ -1,5 +1,6 @@
 package com.example.amazonsqsdemo;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,8 +19,8 @@ public class SQSResource {
         return sqsService.sendMessage(authToken,message);
     }
 
-    @GetMapping("/test")
-    public String get(){
-        return "hello";
+    @GetMapping("/getMessage")
+    public ResponseEntity<SQSMessage> getMessagebyId(@RequestParam("messageId") String messageId){
+        return sqsService.getMessage(messageId);
     }
 }

@@ -14,6 +14,15 @@ public class SQSMessage {
     private Map<String, MessageAttributeValue> messageAttributes;
     private String messageContent;
 
+    public SQSMessage() {
+    }
+
+    public SQSMessage(String messageId, Map<String, MessageAttributeValue> messageAttributes, String messageContent) {
+        this.messageId = messageId;
+        this.messageAttributes = messageAttributes;
+        this.messageContent = messageContent;
+    }
+
     @Override
     public String toString(){
         return "Message{"+
